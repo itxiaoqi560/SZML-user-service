@@ -1,0 +1,107 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: user-service
+  main:
+    allow-circular-references: true
+  rabbitmq:
+    requested-heartbeat: 60 # 心跳测试间隔
+    connection-timeout: 30 # 连接超时时间
+    listener:
+      simple:
+        retry:
+          enabled: true # 允许消费重试
+          max-attempts: 5 # 最大消费重试次数
+          multiplier: 1 # 每次重试间隔乘以1
+          initial-interval: 5000 # 初始化消费重试间隔
+    host: localhost
+    port: 5672
+    virtual-host: /itxiaoqi
+    username: admin
+    password: 1w34567890A
+  sharding-sphere:
+    datasource:
+      names: ds0,ds1,ds2
+      ds0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/test?useSSL=false&serverTimezone=UTC
+        username: root
+        password: 1w34567890A
+      ds1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/test01?useSSL=false&serverTimezone=UTC
+        username: root
+        password: 1w34567890A
+      ds2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/test02?useSSL=false&serverTimezone=UTC
+        username: root
+        password: 1w34567890A
+    rules:
+      sharding:
+        sharding-algorithms:
+          database-line:
+            type: INLINE
+            props:
+              algorithm-expression: ds$->{id % 3}
+        tables:
+          tb_user:
+            key-generate-strategy:
+              column: id
+              key-generator-name: snowflake
+            database-strategy:
+              standard:
+                sharding-column: id
+                sharding-algorithm-name: database-line
+        key-generators:
+          snowflake:
+            type: SNOWFLAKE
+            props:
+              worker-id: 666
+    props:
+      sql-show: true
+      transaction-type: LOCAL
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+
+feign:
+  okhttp:
+    enabled: true
+
+seata:
+  enable-auto-data-source-proxy: false
+  registry:
+    type: nacos
+    nacos:
+      server-addr: localhost:8848
+      namespace: ""
+      group: DEFAULT_GROUP
+      application: seata-server
+      username: nacos
+      password: nacos
+  tx-service-group: user-permission
+  service:
+    vgroup-mapping:
+      user-permission: "default"
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.itxiaoqi.userservice.entity.po
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    org.springframework.jdbc.support.JdbcTransactionManager: info
+    com.itxiaoqi: info
+    io.seata: debug
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss
+  config: classpath:log/logback.xml
