@@ -6,5 +6,4 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Loggable {
     String value() default "";
-    boolean flag() default false;
 }

@@ -2,16 +2,20 @@ package com.itxiaoqi.userservice.entity.result;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.itxiaoqi.userservice.constant.Constant;
+import com.itxiaoqi.userservice.constant.RedisConstant;
 import com.itxiaoqi.userservice.context.UserIdContext;
 import com.itxiaoqi.userservice.utils.JwtUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class Result<T> implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -41,6 +45,7 @@ public class Result<T> implements Serializable {
     }
 
     @AllArgsConstructor
+    @NoArgsConstructor
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class DataObject<T> implements Serializable {
@@ -51,7 +56,7 @@ public class Result<T> implements Serializable {
     private static String getToken(){
         Map<String, Object> mp = new HashMap<>();
         mp.put(Constant.ID, UserIdContext.getId());
-        String token = JwtUtil.createJWT(Constant.SECRET_KEY, Constant.TOKEN_EXPIRE, mp);
+        String token = JwtUtil.createJWT(Constant.SECRET_KEY, RedisConstant.TOKEN_EXPIRE, mp);
         return token;
     }
 }

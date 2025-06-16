@@ -97,6 +97,15 @@
 			<artifactId>hutool-all</artifactId>
 			<version>5.8.21</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+			<version>5.7.11</version>
+		</dependency>
 <!--		AI-Deepseek-->
 		<dependency>
 			<groupId>org.antlr</groupId>
@@ -119,6 +128,8 @@
 							<version>1.18.30</version>
 						</path>
 					</annotationProcessorPaths>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -131,14 +142,6 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
 				</configuration>
 			</plugin>
 		</plugins>

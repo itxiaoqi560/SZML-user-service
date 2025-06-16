@@ -17,8 +17,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 @Aspect
@@ -26,21 +24,24 @@ import java.util.Objects;
 public class LoggingAspect {
     @Resource
     private RabbitTemplate rabbitTemplate;
-    @Resource
-    private UserMapper userMapper;
 
     @Pointcut("@annotation(com.itxiaoqi.userservice.anno.Loggable)")
     public void logPointcut() {}
 
     @Around("logPointcut()")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
+        //获取方法签名
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        //获取ip地址
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         String ip=getClientIp(request);
+        //获取方法执行的方法
         String operation = signature.getMethod().getAnnotation(Loggable.class).value();
+        //获取操作者id
         Long userId= UserIdContext.getId();
-        if(userId==null) userId=1L;
+        //序列化方法参数
         String params= JSONUtil.toJsonStr(joinPoint.getArgs());
+        //封装日志信息
         OperationLog operationLog = OperationLog.builder()
                 .operatorId(userId)
                 .operation(operation)
@@ -49,38 +50,46 @@ public class LoggingAspect {
                 .createTime(LocalDateTime.now())
                 .build();
         try {
-            boolean flag = signature.getMethod().getAnnotation(Loggable.class).flag();
-            Map<String,Object> mp=new HashMap<>();
-            if(flag){
-                mp.put("old",userMapper.selectById(userId));
-            }
+            //执行原生方法
             Object result = joinPoint.proceed();
-            if(flag){
-                mp.put("new",userMapper.selectById(userId));
-            }
-            saveLog(operationLog,true,mp.toString(),"");
+            //消息队列持久化日志
+            saveLog(operationLog,true,"");
             return result;
         } catch (Exception e) {
-            saveLog(operationLog,false,"",e.getMessage());
+            //消息队列持久化日志
+            saveLog(operationLog,false,e.getMessage());
             throw e;
         }
     }
 
-    private void saveLog(OperationLog operationLog,Boolean operationStatus,String detail,String errorMessage){
+    /**
+     * 持久化日志
+     * @param operationLog 操作日志
+     * @param operationStatus 操作状态
+     * @param errorMessage 错误信息
+     */
+
+    private void saveLog(OperationLog operationLog,Boolean operationStatus,String errorMessage){
+        //设置操作状态
         operationLog.setOperationStatus(operationStatus);
-        operationLog.setDetail(detail);
+        //设置错误信息
         operationLog.setErrorMessage(errorMessage);
+        //消息队列持久化日志
         rabbitTemplate.convertAndSend(Constant.LOGGING_EXCHANGE,
                 Constant.LOGGING_ROUTING,
                 operationLog);
     }
 
+    /**
+     * AI-Deepseek
+     * @param request http请求
+     * @return ip地址
+     */
     public String getClientIp(HttpServletRequest request) {
         String ipAddress = null;
 
         ipAddress = request.getHeader("X-Forwarded-For");
         if (ipAddress != null && !ipAddress.isEmpty() && !"unknown".equalsIgnoreCase(ipAddress)) {
-            // 如果 X-Forwarded-For 包含多个 IP 地址，取第一个非 unknown 的 IP
             int index = ipAddress.indexOf(',');
             if (index != -1) {
                 ipAddress = ipAddress.substring(0, index).trim();

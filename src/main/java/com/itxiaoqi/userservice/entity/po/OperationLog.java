@@ -12,8 +12,11 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class OperationLog implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private String operation;
     private String ip;
@@ -21,6 +24,5 @@ public class OperationLog implements Serializable {
     private String requestParams;
     private Boolean operationStatus;
     private String errorMessage;
-    private String detail;
     private LocalDateTime createTime;
 }

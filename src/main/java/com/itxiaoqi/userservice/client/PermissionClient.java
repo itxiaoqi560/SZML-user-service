@@ -1,6 +1,5 @@
 package com.itxiaoqi.userservice.client;
 
-import com.itxiaoqi.userservice.entity.result.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +14,7 @@ public interface PermissionClient {
      * @param userId
      */
     @PostMapping("/permission/bindDefaultRole")
-    Result bindDefaultRole(@RequestParam Long userId);
+    void bindDefaultRole(@RequestParam Long userId);
 
 
     /**
@@ -25,7 +24,7 @@ public interface PermissionClient {
      * @return
      */
     @GetMapping("/permission/getUserRoleCode")
-    Result getUserRoleCode(@RequestParam Long userId);
+    String getUserRoleCode(@RequestParam Long userId);
 
     /**
      * 超管调用：升级用户为管理员
@@ -33,7 +32,7 @@ public interface PermissionClient {
      * @param userId
      */
     @PutMapping("/permission/upgradeToAdmin")
-    Result upgradeToAdmin(@RequestParam Long userId);
+    void upgradeToAdmin(@RequestParam Long userId);
 
     /**
      * 超管调用：降级用户为普通角色
@@ -41,6 +40,7 @@ public interface PermissionClient {
      * @param userId
      */
     @PutMapping("/permission/downgradeToUser")
-    Result downgradeToUser(@RequestParam Long userId);
+    void downgradeToUser(@RequestParam Long userId);
+
 }
 

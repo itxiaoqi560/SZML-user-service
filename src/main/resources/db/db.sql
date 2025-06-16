@@ -6,7 +6,7 @@ USE test;
 CREATE TABLE IF NOT EXISTS tb_user
 (
     id          BIGINT PRIMARY KEY COMMENT '用户id',
-    username    VARCHAR(50)  NOT NULL COMMENT '用户名',
+    username    VARCHAR(50)  NOT NULL UNIQUE COMMENT '用户名',
     password    VARCHAR(255) NOT NULL COMMENT '密码',
     email       VARCHAR(100) NOT NULL UNIQUE COMMENT '邮箱',
     phone       VARCHAR(20)  NOT NULL UNIQUE COMMENT '手机号',
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tb_user
     COMMENT = '用户表1';
 
 INSERT INTO tb_user (id, username, password, email, phone)
-VALUES (0, 'user1', 'password1', 'user1@example.com', '12345678901');
+VALUES (0, 'userA1234', '$2a$10$iGJ5t6tbffIJI1K0QmPtB.dgVGZP6bf5d7VP1nhekAFYMimu7p6PG', 'user1@example.com', '19973571860');
 
 CREATE TABLE IF NOT EXISTS `undo_log`
 (
@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS `undo_log`
     PRIMARY KEY (`id`),
     UNIQUE KEY `ux_undo_log` (`xid`, `branch_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
     COMMENT = '回滚日志1';
 
@@ -43,7 +42,7 @@ USE test01;
 CREATE TABLE IF NOT EXISTS tb_user
 (
     id          BIGINT PRIMARY KEY COMMENT '用户id',
-    username    VARCHAR(50)  NOT NULL COMMENT '用户名',
+    username    VARCHAR(50)  NOT NULL UNIQUE COMMENT '用户名',
     password    VARCHAR(255) NOT NULL COMMENT '密码',
     email       VARCHAR(100) NOT NULL UNIQUE COMMENT '邮箱',
     phone       VARCHAR(20)  NOT NULL UNIQUE COMMENT '手机号',
@@ -53,7 +52,7 @@ CREATE TABLE IF NOT EXISTS tb_user
     COMMENT = '用户表2';
 
 INSERT INTO tb_user (id, username, password, email, phone)
-VALUES (1, 'user2', 'password2', 'user2@example.com', '12345678902');
+VALUES (1, 'userB1234', '$2a$10$iGJ5t6tbffIJI1K0QmPtB.dgVGZP6bf5d7VP1nhekAFYMimu7p6PG', 'user2@example.com', '19973571861');
 
 CREATE TABLE IF NOT EXISTS `undo_log`
 (
@@ -68,7 +67,6 @@ CREATE TABLE IF NOT EXISTS `undo_log`
     PRIMARY KEY (`id`),
     UNIQUE KEY `ux_undo_log` (`xid`, `branch_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
     COMMENT = '回滚日志2';
 
@@ -80,7 +78,7 @@ USE test02;
 CREATE TABLE IF NOT EXISTS tb_user
 (
     id          BIGINT PRIMARY KEY COMMENT '用户id',
-    username    VARCHAR(50)  NOT NULL COMMENT '用户名',
+    username    VARCHAR(50)  NOT NULL UNIQUE COMMENT '用户名',
     password    VARCHAR(255) NOT NULL COMMENT '密码',
     email       VARCHAR(100) NOT NULL UNIQUE COMMENT '邮箱',
     phone       VARCHAR(20)  NOT NULL UNIQUE COMMENT '手机号',
@@ -90,7 +88,7 @@ CREATE TABLE IF NOT EXISTS tb_user
     COMMENT = '用户表3';
 
 INSERT INTO tb_user (id, username, password, email, phone)
-VALUES (2, 'user3', 'password3', 'user3@example.com', '12345678903');
+VALUES (2, 'userC1234', '$2a$10$iGJ5t6tbffIJI1K0QmPtB.dgVGZP6bf5d7VP1nhekAFYMimu7p6PG', 'user3@example.com', '19973571862');
 
 CREATE TABLE IF NOT EXISTS `undo_log`
 (
@@ -105,6 +103,5 @@ CREATE TABLE IF NOT EXISTS `undo_log`
     PRIMARY KEY (`id`),
     UNIQUE KEY `ux_undo_log` (`xid`, `branch_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
     COMMENT = '回滚日志3';
