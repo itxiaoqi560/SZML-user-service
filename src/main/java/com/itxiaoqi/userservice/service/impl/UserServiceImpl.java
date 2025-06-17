@@ -1,6 +1,10 @@
 package com.itxiaoqi.userservice.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.AbstractWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.itxiaoqi.userservice.cache.RedisCache;
 import com.itxiaoqi.userservice.client.PermissionClient;
@@ -53,6 +57,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public PageResult getUsers(Integer page, Integer pageSize) {
+        if(page<=0){
+            throw new BusinessException(ExceptionConstant.PAGE_IS_ILLEGAL);
+        }
+        if(pageSize<=0){
+            throw new BusinessException(ExceptionConstant.PAGE_SIZE_IS_ILLEGAL);
+        }
+        if(pageSize>100){
+            throw new BusinessException(ExceptionConstant.PAGE_SIZE_TOO_BIG);
+        }
         //查询所有的用户
         List<User> userList = userMapper.selectList(lambdaQuery().orderBy(true, true, User::getCreateTime).getWrapper());
         //获取执行操作者的角色码
@@ -68,6 +81,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         for (int i = beginSize; i < beginSize + pageSize && i < total; ++i) {
             resultUserList.add(userList.get(i));
         }
+        log.info("分页后得到的用户数据：{}",resultUserList);
         //将User转换为UserVO
         List<UserVO> userVOList = resultUserList.stream()
                 .map(this::convertUserToUserVO)
@@ -132,6 +146,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = userMapper.selectOne(lambdaQuery().eq(User::getUsername, userDTO.getUsername()).getWrapper());
         //判断用户是否存在，若存在，判断密码是否匹配
         if (Objects.isNull(user)||!passwordEncoder.matches(userDTO.getPassword(),user.getPassword())) {
+            log.info("用户不存在或密码不正确");
             throw new BusinessException(ExceptionConstant.USERNAME_OR_PASSWORD_ERROR);
         }
         //保存用户id，为创建身份令牌做准备
@@ -156,6 +171,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             //查询的用户信息是自己的，直接返回
             User user = userMapper.selectById(id);
             if (Objects.isNull(user)) {
+                log.info("用户不存在");
                 throw new BusinessException(ExceptionConstant.USER_NOT_FOUND);
             }
             return convertUserToUserVO(user);
@@ -219,6 +235,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //过滤出有权限重置密码的用户
         idList = idList.stream().filter(id -> UserIdContext.getId().equals(id) || permissionGe(userRoleCode, id))
                 .collect(Collectors.toList());
+        log.info("可被重置密码的用户：{}",idList);
         //过滤后为空，直接返回
         if (CollUtil.isEmpty(idList)) {
             return;
@@ -238,10 +255,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //判断该用户是否为超管
         String userRoleCode=permissionClient.getUserRoleCode(UserIdContext.getId());
         if(!Constant.SUPER_ADMIN.equals(userRoleCode)){
+            log.info("用户不为超管，无权限升级其他用户为管理员");
             throw new BusinessException(ExceptionConstant.PERMISSION_DENIED);
         }
         //降级用户为普通角色
-        permissionClient.downgradeToUser(id);
+        int result=permissionClient.downgradeToUser(id);
+        if(result!=1){
+            throw new BusinessException(ExceptionConstant.INVALID_USER_CREDENTIALS);
+        }
     }
 
     /**
@@ -253,10 +274,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //判断该用户是否为超管
         String userRoleCode=permissionClient.getUserRoleCode(UserIdContext.getId());
         if(!Constant.SUPER_ADMIN.equals(userRoleCode)){
+            log.info("用户{}不为超管，无权限升级其他用户为管理员",UserIdContext.getId());
             throw new BusinessException(ExceptionConstant.PERMISSION_DENIED);
         }
         //升级用户为管理员
-        permissionClient.upgradeToAdmin(id);
+        int result=permissionClient.upgradeToAdmin(id);
+        if(result!=1){
+            throw new BusinessException(ExceptionConstant.INVALID_USER_CREDENTIALS);
+        }
     }
 
 
@@ -266,10 +291,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @param userDTO 用户DTO
      */
     private void updateUserInfo(Long id, UserDTO userDTO) {
+        LambdaUpdateChainWrapper<User> wrapper = lambdaUpdate();
+        if(Strings.hasText(userDTO.getPassword())){
+            wrapper.set(User::getPassword,passwordEncoder.encode(userDTO.getPassword()));
+        }
         //根据id更新用户信息
-        userMapper.update(lambdaUpdate().eq(User::getId, id)
+        userMapper.update(wrapper.eq(User::getId, id)
                 .set(Strings.hasText(userDTO.getEmail()), User::getEmail, userDTO.getEmail())
-                .set(Strings.hasText(userDTO.getPassword()), User::getPassword, passwordEncoder.encode(userDTO.getPassword()))
                 .set(Strings.hasText(userDTO.getPhone()), User::getPhone, userDTO.getPhone())
                 .set(Strings.hasText(userDTO.getUsername()), User::getUsername, userDTO.getUsername())
                 .getWrapper());
@@ -294,6 +322,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 return;
             }
         }
+        log.info("无权限操作id为{}的用户",userId);
         //无权限，抛出异常
         throw new BusinessException(ExceptionConstant.PERMISSION_DENIED);
     }

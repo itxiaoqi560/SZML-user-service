@@ -13,4 +13,8 @@ public abstract class ExceptionConstant {
     public static final String USERNAME_FORMAT_IS_INCORRECT = "用户名格式错误";
     public static final String PERMISSION_DENIED = "权限不足";
     public static final String USER_NOT_FOUND = "用户不存在";
+    public static final String PAGE_SIZE_TOO_BIG = "页大小过大";
+    public static final String INVALID_USER_CREDENTIALS = "用户身份不合法";
+    public static final String PAGE_IS_ILLEGAL = "页数不合法";
+    public static final String PAGE_SIZE_IS_ILLEGAL = "页大小不合法";
 }

@@ -32,7 +32,7 @@ public interface PermissionClient {
      * @param userId
      */
     @PutMapping("/permission/upgradeToAdmin")
-    void upgradeToAdmin(@RequestParam Long userId);
+    int upgradeToAdmin(@RequestParam Long userId);
 
     /**
      * 超管调用：降级用户为普通角色
@@ -40,7 +40,7 @@ public interface PermissionClient {
      * @param userId
      */
     @PutMapping("/permission/downgradeToUser")
-    void downgradeToUser(@RequestParam Long userId);
+    int downgradeToUser(@RequestParam Long userId);
 
 }
 

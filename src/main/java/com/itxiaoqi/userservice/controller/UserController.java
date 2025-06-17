@@ -99,7 +99,7 @@ public class UserController {
      * @param idList 用户id集合
      * @return 响应结果
      */
-    @PutMapping("/user/reset-password")
+    @PostMapping("/user/reset-password")
     @Loggable(value = "密码重置")
     public Result resetPassword(@RequestParam List<Long> idList) {
         log.info("密码重置：{},{}", UserIdContext.getId(),idList);
