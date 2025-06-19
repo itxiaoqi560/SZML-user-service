@@ -106,16 +106,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         RegexUtil.isUsernameValid(userDTO.getUsername());
         //根据用户名查找用户
         User user = userMapper.selectOne(lambdaQuery().eq(User::getUsername, userDTO.getUsername()).getWrapper());
-        //判断用户名是否唯一
-        if (!Objects.isNull(user)) {
-            throw new BusinessException(ExceptionConstant.USERNAME_ALREADY_EXIST);
-        }
+        //根据用户名查找用户
+        checkUsernameUnique(userDTO.getUsername());
         //根据手机号查找用户
-        user = userMapper.selectOne(lambdaQuery().eq(User::getPhone, userDTO.getPhone()).getWrapper());
-        //判断手机号是否唯一
-        if (!Objects.isNull(user)) {
-            throw new BusinessException(ExceptionConstant.PHONE_NUMBER_ALREADY_REGISTERED);
-        }
+        checkPhoneUnique(userDTO.getPhone());
+        //根据邮箱查找用户
+        checkEmailUnique(userDTO.getEmail());
         //封装用户信息
         user = User.builder()
                 .id(idGenerator.nextId())
@@ -211,6 +207,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (Strings.hasText(userDTO.getUsername())) {
             RegexUtil.isUsernameValid(userDTO.getUsername());
         }
+        //根据用户名查找用户
+        checkUsernameUnique(userDTO.getUsername());
+        //根据手机号查找用户
+        checkPhoneUnique(userDTO.getPhone());
+        //根据邮箱查找用户
+        checkEmailUnique(userDTO.getEmail());
         //判断要修改的用户信息是否是自己的
         if (UserIdContext.getId().equals(id)) {
             updateUserInfo(id, userDTO);
@@ -355,5 +357,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .phone(user.getPhone())
                 .email(user.getEmail())
                 .build();
+    }
+
+    private void checkUsernameUnique(String username){
+        //根据用户名查找用户
+        User user = userMapper.selectOne(lambdaQuery().eq(User::getUsername, username).getWrapper());
+        //判断用户名是否唯一
+        if (!Objects.isNull(user)) {
+            throw new BusinessException(ExceptionConstant.USERNAME_ALREADY_EXIST);
+        }
+    }
+
+    private void checkPhoneUnique(String phone){
+        //根据手机号查找用户
+        User user = userMapper.selectOne(lambdaQuery().eq(User::getPhone, phone).getWrapper());
+        //判断手机号是否唯一
+        if (!Objects.isNull(user)) {
+            throw new BusinessException(ExceptionConstant.PHONE_NUMBER_ALREADY_REGISTERED);
+        }
+    }
+
+    private void checkEmailUnique(String email){
+        //根据邮箱查找用户
+        User user = userMapper.selectOne(lambdaQuery().eq(User::getEmail, email).getWrapper());
+        //判断邮箱是否唯一
+        if (!Objects.isNull(user)) {
+            throw new BusinessException(ExceptionConstant.EMAIL_ALREADY_REGISTERED);
+        }
     }
 }

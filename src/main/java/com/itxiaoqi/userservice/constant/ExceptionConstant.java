@@ -17,4 +17,5 @@ public abstract class ExceptionConstant {
     public static final String INVALID_USER_CREDENTIALS = "用户身份不合法";
     public static final String PAGE_IS_ILLEGAL = "页数不合法";
     public static final String PAGE_SIZE_IS_ILLEGAL = "页大小不合法";
+    public static final String EMAIL_ALREADY_REGISTERED = "邮箱已经被注册";
 }

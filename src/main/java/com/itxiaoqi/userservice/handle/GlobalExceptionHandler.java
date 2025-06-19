@@ -1,5 +1,6 @@
 package com.itxiaoqi.userservice.handle;
 
+import com.itxiaoqi.userservice.constant.ExceptionConstant;
 import com.itxiaoqi.userservice.entity.result.Result;
 import com.itxiaoqi.userservice.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class GlobalExceptionHandler {
     public Result exceptionHandler(RuntimeException e){
         log.error("异常信息：{}", e.getMessage());
 //        e.printStackTrace();
-        return Result.error(e.getMessage());
+        return Result.error(ExceptionConstant.THE_SERVER_IS_ERROR);
     }
 
 }
